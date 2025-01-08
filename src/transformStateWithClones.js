@@ -9,27 +9,30 @@
 
 function transformStateWithClones(state, actions) {
   // write code here
+  const executeAction = (lastState, action) => {
+    switch (action.type) {
+      case 'clear':
+        return {};
+      case 'addProperties':
+        return {
+          ...lastState,
+          ...action.extraData,
+        };
+      case 'removeProperties':
+        const aux = { ...lastState };
+
+        for (const key of action.keysToRemove) {
+          delete aux[key];
+        }
+
+        return aux;
+    }
+  };
+
   return actions
     .reduce(
-      (history, action) => {
-        switch (action.type) {
-          case 'clear':
-            return history.concat({});
-          case 'addProperties':
-            return history.concat({
-              ...history.at(-1),
-              ...action.extraData,
-            });
-          case 'removeProperties':
-            const aux = { ...history.at(-1) };
-
-            for (const key of action.keysToRemove) {
-              delete aux[key];
-            }
-
-            return history.concat(aux);
-        }
-      },
+      (history, action) =>
+        history.concat(executeAction(history.at(-1), action)),
       [state],
     )
     .slice(1);
